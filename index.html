@@ -4,97 +4,142 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Funny Question Game</title>
+
 <style>
+  * {
+    box-sizing: border-box;
+  }
+
   body {
-    font-family: Arial, sans-serif;
-    text-align: center;
     margin: 0;
-    padding: 0;
     height: 100vh;
     background: linear-gradient(120deg, #ff9a9e, #fad0c4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    font-family: Arial, sans-serif;
     overflow: hidden;
-    flex-direction: column;
+  }
+
+  .container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
   }
 
   h1 {
-    font-size: 2.5em;
+    margin-top: 60px;
+    font-size: 2.2rem;
     color: #fff;
-    text-shadow: 2px 2px 5px #ff69b4;
-    margin-bottom: 50px;
+    text-shadow: 2px 2px 6px #ff69b4;
+    padding: 0 10px;
   }
 
-  .btn {
-    padding: 15px 30px;
+  button {
+    padding: 14px 26px;
     font-size: 18px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    margin: 20px;
     position: absolute;
-    transition: all 0.1s;
   }
 
   #yes {
     background-color: #4CAF50;
     color: white;
-    left: 150px;
-    top: 150px;
+    left: 35%;
+    top: 55%;
   }
 
   #no {
     background-color: #f44336;
     color: white;
-    left: 350px;
-    top: 150px;
+    left: 55%;
+    top: 55%;
   }
 
-  #memeContainer {
-    display: none; /* hidden initially */
-    flex-direction: column;
-    align-items: center;
+  #result {
+    display: none;
+    margin-top: 40px;
   }
 
-  #memeContainer img {
-    width: 400px;
+  #result h1 {
+    font-size: 2rem;
+  }
+
+  #result img {
+    width: 90%;
+    max-width: 350px;
     border-radius: 15px;
     margin-top: 20px;
   }
+
+  /* Mobile adjustments */
+  @media (max-width: 600px) {
+    h1 {
+      font-size: 1.8rem;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 12px 22px;
+    }
+
+    #yes {
+      left: 25%;
+    }
+
+    #no {
+      left: 55%;
+    }
+  }
 </style>
 </head>
+
 <body>
 
-<h1 id="question">Will you be there?</h1>
-<button id="yes" class="btn">Yes</button>
-<button id="no" class="btn">No</button>
+<div class="container">
+  <h1 id="question">Will you be there? 🥺</h1>
 
-<!-- Hidden meme container -->
-<div id="memeContainer">
-  <img src="dog.gif" alt="Dog Meme">
+  <button id="yes">Yes</button>
+  <button id="no">No</button>
+
+  <div id="result">
+    <h1>😂 You clicked No!</h1>
+    <img src="dog.gif" alt="Crying Meme">
+  </div>
 </div>
 
 <script>
-  const yesBtn = document.getElementById('yes');
-  const noBtn = document.getElementById('no');
-  const question = document.getElementById('question');
-  const memeContainer = document.getElementById('memeContainer');
+  const yesBtn = document.getElementById("yes");
+  const noBtn = document.getElementById("no");
+  const result = document.getElementById("result");
+  const question = document.getElementById("question");
 
-  // Yes button moves randomly when hovered (cannot be clicked)
-  yesBtn.addEventListener('mouseover', () => {
-    const x = Math.random() * (window.innerWidth - yesBtn.offsetWidth - 20);
-    const y = Math.random() * (window.innerHeight - yesBtn.offsetHeight - 20);
-    yesBtn.style.left = x + 'px';
-    yesBtn.style.top = y + 'px';
+  function moveYesFast() {
+    const maxX = window.innerWidth - yesBtn.offsetWidth - 20;
+    const maxY = window.innerHeight - yesBtn.offsetHeight - 20;
+
+    const x = Math.random() * maxX;
+    const y = Math.random() * maxY;
+
+    yesBtn.style.left = x + "px";
+    yesBtn.style.top = y + "px";
+  }
+
+  // Desktop
+  yesBtn.addEventListener("mouseover", moveYesFast);
+  yesBtn.addEventListener("mousemove", moveYesFast);
+
+  // Mobile
+  yesBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    moveYesFast();
   });
 
-  // No button click - show local GIF
-  noBtn.addEventListener('click', () => {
-    question.style.display = 'none';
-    yesBtn.style.display = 'none';
-    noBtn.style.display = 'none';
-    memeContainer.style.display = 'flex';
+  noBtn.addEventListener("click", () => {
+    yesBtn.style.display = "none";
+    noBtn.style.display = "none";
+    question.style.display = "none";
+    result.style.display = "block";
   });
 </script>
 
