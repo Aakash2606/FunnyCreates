@@ -99,69 +99,61 @@ const noSong = document.getElementById("noSong");
 
 const teasingLines = [
   "Itna mushkil sawal hai kya? 😏",
-  "Soch lo ache se 😌",
+  "Soch lo ache se… dil se 💖",
+  "Itna bhi kya bhaav khaana 😌",
   "Dil toot jayega mera 💔",
-  "Last chance 🥺",
-  "Ab toh YES bol do 😭"
+  "Last chance hai… YES bol do 🥺",
+  "Ab toh sharam kar lo 😭"
 ];
 
-let tries = 0;
-let yesUnlocked = false;
+let teaseIndex = 0;
 
-/* SAFE AUDIO PLAY (Mobile + Desktop) */
+/* 🔊 PLAY AUDIO SAFELY (CLICK CONTEXT) */
 function playSegment(audio, start, duration = 20) {
   audio.pause();
   audio.currentTime = start;
-
-  audio.play().catch(() => {
-    document.body.addEventListener("click", () => audio.play(), { once: true });
-  });
-
+  audio.play().catch(() => {}); // mobile safe
   setTimeout(() => audio.pause(), duration * 1000);
 }
 
-/* MOVE YES BUTTON */
+/* 🎯 MOVE YES BUTTON */
 function moveYes() {
-  const w = playArea.clientWidth - 120;
-  const h = playArea.clientHeight - 60;
+  const w = playArea.clientWidth - yesBtn.offsetWidth;
+  const h = playArea.clientHeight - yesBtn.offsetHeight;
 
   yesBtn.style.left = Math.random() * w + "px";
   yesBtn.style.top = Math.random() * h + "px";
 }
 
-/* YES CLICK */
+/* 💖 YES CLICK – TEASE + MUSIC */
 yesBtn.addEventListener("click", () => {
-  playSegment(yesSong, 87, 20); // plays instantly
 
-  if (tries < teasingLines.length) {
-    question.textContent = teasingLines[tries];
-    tries++;
-    setTimeout(moveYes, 500);
+  // 1️⃣ Play music immediately
+  playSegment(yesSong, 87, 20);
+
+  // 2️⃣ Change teasing text
+  if (teaseIndex < teasingLines.length) {
+    question.textContent = teasingLines[teaseIndex];
+    teaseIndex++;
   } else {
     question.textContent = "OMG YES 😍💖";
-    yesUnlocked = true;
   }
+
+  // 3️⃣ Move YES after click
+  setTimeout(moveYes, 300);
 });
 
-/* DESKTOP RUN AWAY */
-document.addEventListener("mousemove", e => {
-  if (yesUnlocked) return;
-
-  const r = yesBtn.getBoundingClientRect();
-  const dx = e.clientX - (r.left + r.width / 2);
-  const dy = e.clientY - (r.top + r.height / 2);
-
-  if (Math.sqrt(dx*dx + dy*dy) < 100) moveYes();
-});
-
-/* NO CLICK */
+/* 💔 NO CLICK – SKIP MUSIC + RESULT */
 noBtn.addEventListener("click", () => {
+
   playArea.style.display = "none";
   question.style.display = "none";
   result.style.display = "block";
 
+  // 🔊 Play NO song from middle (NOT start)
   playSegment(noSong, 34, 20);
 
+  // 😭 Emojis
   for (let i = 0; i < 30; i++) {
     const e = document.createElement("div");
     e.className = "emoji";
