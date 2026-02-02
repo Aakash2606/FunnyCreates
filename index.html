@@ -101,21 +101,21 @@
     <img id="meme" src="dog.gif">
   </div>
 </div>
-
 <script>
-  const yesBtn = document.getElementById("yes");
-  const noBtn = document.getElementById("no");
-  const playArea = document.getElementById("playArea");
-  const result = document.getElementById("result");
-  const question = document.getElementById("question");
-  const memeImg = document.getElementById("meme");
+const yesBtn = document.getElementById("yes");
+const noBtn = document.getElementById("no");
+const playArea = document.getElementById("playArea");
+const result = document.getElementById("result");
+const question = document.getElementById("question");
+const memeImg = document.getElementById("meme");
 
-  const yesTexts = ["Almost 😜", "Too slow 🐢", "Haha 😂", "Not today 😈", "Nice try 😉"];
-  const memes = ["dog.gif", "puneet.gif", "sad.gif"];
+const yesTexts = ["Almost 😜", "Too slow 🐢", "Haha 😂", "Not today 😈", "Nice try 😉"];
+const memes = ["dog.gif", "puneet.gif", "sad.gif"];
 
-  let speedBoost = 1;
+let speedBoost = 1;
 
-  function moveYes() {
+// Function to move YES
+function moveYes() {
     speedBoost += 0.2;
 
     const areaW = playArea.clientWidth;
@@ -133,21 +133,15 @@
     yesBtn.style.top = y + "px";
     yesBtn.style.transform = `rotate(${rotate}deg) scale(${scale})`;
     yesBtn.textContent = yesTexts[Math.floor(Math.random() * yesTexts.length)];
-  }
+}
 
-  yesBtn.addEventListener("mouseenter", moveYes);
-  yesBtn.addEventListener("mousemove", moveYes);
-  yesBtn.addEventListener("touchstart", e => {
-    e.preventDefault();
-    moveYes();
-  });
+// Unified pointer events for desktop + mobile
+yesBtn.addEventListener("pointerover", moveYes);
+yesBtn.addEventListener("pointermove", moveYes);
+yesBtn.addEventListener("click", e => e.preventDefault());
 
-  yesBtn.addEventListener("click", e => {
-    e.preventDefault();
-    moveYes();
-  });
-
-  noBtn.addEventListener("click", () => {
+// NO button click
+noBtn.addEventListener("click", () => {
     playArea.style.display = "none";
     question.style.display = "none";
     result.style.display = "block";
@@ -157,16 +151,17 @@
     if (navigator.vibrate) navigator.vibrate(300);
 
     for (let i = 0; i < 30; i++) {
-      const emoji = document.createElement("div");
-      emoji.className = "emoji";
-      emoji.textContent = ["😭", "💔", "😢"][Math.floor(Math.random() * 3)];
-      emoji.style.left = Math.random() * 100 + "vw";
-      emoji.style.animationDuration = 2 + Math.random() * 2 + "s";
-      document.body.appendChild(emoji);
-      setTimeout(() => emoji.remove(), 3000);
+        const emoji = document.createElement("div");
+        emoji.className = "emoji";
+        emoji.textContent = ["😭", "💔", "😢"][Math.floor(Math.random() * 3)];
+        emoji.style.left = Math.random() * 100 + "vw";
+        emoji.style.animationDuration = 2 + Math.random() * 2 + "s";
+        document.body.appendChild(emoji);
+        setTimeout(() => emoji.remove(), 3000);
     }
-  });
+});
 </script>
+
 
 </body>
 </html>
