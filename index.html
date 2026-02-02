@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Funny Question Game</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Will You Be There?</title>
 
 <style>
   * { box-sizing: border-box; }
@@ -17,16 +17,15 @@
   }
 
   .container {
-    position: relative;
-    width: 100%;
     height: 100%;
     text-align: center;
     padding-top: 60px;
+    position: relative;
   }
 
   h1 {
-    font-size: 2rem;
     color: white;
+    font-size: 2rem;
     text-shadow: 2px 2px 6px #ff69b4;
     padding: 0 15px;
   }
@@ -42,21 +41,21 @@
     font-size: 18px;
     border: none;
     border-radius: 10px;
-    cursor: pointer;
     position: absolute;
+    cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
 
   #yes {
-    background-color: #4CAF50;
+    background: #4CAF50;
     color: white;
     left: 30%;
     top: 40%;
   }
 
   #no {
-    background-color: #f44336;
+    background: #f44336;
     color: white;
     left: 55%;
     top: 40%;
@@ -64,14 +63,25 @@
 
   #result {
     display: none;
-    margin-top: 30px;
+    margin-top: 20px;
   }
 
   #result img {
     width: 90%;
-    max-width: 340px;
+    max-width: 350px;
     border-radius: 15px;
-    margin-top: 20px;
+    margin-top: 15px;
+  }
+
+  .emoji {
+    position: fixed;
+    font-size: 24px;
+    animation: fall 2.5s linear forwards;
+  }
+
+  @keyframes fall {
+    from { top: -10%; opacity: 1; }
+    to { top: 110%; opacity: 0; }
   }
 </style>
 </head>
@@ -82,13 +92,13 @@
   <h1 id="question">Will you be there? 🥺</h1>
 
   <div class="play-area" id="playArea">
-    <button id="yes" type="button">Yes</button>
-    <button id="no" type="button">No</button>
+    <button id="yes">Yes</button>
+    <button id="no">No</button>
   </div>
 
   <div id="result">
     <h1>😂 You clicked No!</h1>
-    <img src="dog.gif" alt="Crying Meme">
+    <img id="meme" src="dog.gif">
   </div>
 </div>
 
@@ -98,36 +108,41 @@
   const playArea = document.getElementById("playArea");
   const result = document.getElementById("result");
   const question = document.getElementById("question");
+  const memeImg = document.getElementById("meme");
+
+  const yesTexts = ["Almost 😜", "Too slow 🐢", "Haha 😂", "Not today 😈", "Nice try 😉"];
+  const memes = ["dog.gif", "puneet.gif", "sad.gif"];
+
+  let speedBoost = 1;
 
   function moveYes() {
+    speedBoost += 0.2;
+
     const areaW = playArea.clientWidth;
     const areaH = playArea.clientHeight;
     const btnW = yesBtn.offsetWidth;
     const btnH = yesBtn.offsetHeight;
 
-    const maxX = Math.max(0, areaW - btnW);
-    const maxY = Math.max(0, areaH - btnH);
+    const x = Math.random() * (areaW - btnW);
+    const y = Math.random() * (areaH - btnH);
 
-    const x = Math.random() * maxX;
-    const y = Math.random() * maxY;
+    const rotate = Math.random() * 20 - 10;
+    const scale = 1 + Math.random() * 0.2;
 
     yesBtn.style.left = x + "px";
     yesBtn.style.top = y + "px";
+    yesBtn.style.transform = `rotate(${rotate}deg) scale(${scale})`;
+    yesBtn.textContent = yesTexts[Math.floor(Math.random() * yesTexts.length)];
   }
 
-  // NEVER allow click on YES
-  yesBtn.addEventListener("click", (e) => {
+  yesBtn.addEventListener("mouseenter", moveYes);
+  yesBtn.addEventListener("mousemove", moveYes);
+  yesBtn.addEventListener("touchstart", e => {
     e.preventDefault();
-    e.stopPropagation();
     moveYes();
   });
 
-  // Desktop
-  yesBtn.addEventListener("mouseenter", moveYes);
-  yesBtn.addEventListener("mousemove", moveYes);
-
-  // Mobile
-  yesBtn.addEventListener("touchstart", (e) => {
+  yesBtn.addEventListener("click", e => {
     e.preventDefault();
     moveYes();
   });
@@ -136,6 +151,20 @@
     playArea.style.display = "none";
     question.style.display = "none";
     result.style.display = "block";
+
+    memeImg.src = memes[Math.floor(Math.random() * memes.length)];
+
+    if (navigator.vibrate) navigator.vibrate(300);
+
+    for (let i = 0; i < 30; i++) {
+      const emoji = document.createElement("div");
+      emoji.className = "emoji";
+      emoji.textContent = ["😭", "💔", "😢"][Math.floor(Math.random() * 3)];
+      emoji.style.left = Math.random() * 100 + "vw";
+      emoji.style.animationDuration = 2 + Math.random() * 2 + "s";
+      document.body.appendChild(emoji);
+      setTimeout(() => emoji.remove(), 3000);
+    }
   });
 </script>
 
