@@ -87,14 +87,15 @@ button {
 
 <audio id="yesSong" preload="metadata" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
 <audio id="noSong" preload="metadata" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
-
 <script>
 const yesBtn = document.getElementById("yes");
 const noBtn = document.getElementById("no");
 const playArea = document.getElementById("playArea");
 const question = document.getElementById("question");
 const result = document.getElementById("result");
-const meme = document.getElementById("meme");
+
+const yesSong = document.getElementById("yesSong");
+const noSong = document.getElementById("noSong");
 
 const teasingLines = [
   "Itna mushkil sawal hai kya? 😏",
@@ -105,14 +106,22 @@ const teasingLines = [
 ];
 
 let tries = 0;
+let yesUnlocked = false;
 
-/* MOVE YES */
+/* SAFE AUDIO PLAY (Mobile + Desktop) */
+function playSegment(audio, start, duration = 20) {
+  audio.pause();
+  audio.currentTime = start;
+
+  audio.play().catch(() => {
+    document.body.addEventListener("click", () => audio.play(), { once: true });
+  });
+
+  setTimeout(() => audio.pause(), duration * 1000);
+}
+
+/* MOVE YES BUTTON */
 function moveYes() {
-  if (tries < teasingLines.length) {
-    question.textContent = teasingLines[tries];
-    tries++;
-  }
-
   const w = playArea.clientWidth - 120;
   const h = playArea.clientHeight - 60;
 
@@ -120,43 +129,38 @@ function moveYes() {
   yesBtn.style.top = Math.random() * h + "px";
 }
 
-/* RUN AWAY */
-document.addEventListener("pointermove", e => {
+/* YES CLICK */
+yesBtn.addEventListener("click", () => {
+  playSegment(yesSong, 87, 20); // plays instantly
+
+  if (tries < teasingLines.length) {
+    question.textContent = teasingLines[tries];
+    tries++;
+    setTimeout(moveYes, 500);
+  } else {
+    question.textContent = "OMG YES 😍💖";
+    yesUnlocked = true;
+  }
+});
+
+/* DESKTOP RUN AWAY */
+document.addEventListener("mousemove", e => {
+  if (yesUnlocked) return;
+
   const r = yesBtn.getBoundingClientRect();
   const dx = e.clientX - (r.left + r.width / 2);
   const dy = e.clientY - (r.top + r.height / 2);
-  if (Math.sqrt(dx*dx + dy*dy) < 120) moveYes();
+
+  if (Math.sqrt(dx*dx + dy*dy) < 100) moveYes();
 });
 
-/* AUDIO SEGMENT */
-function playSegment(audio, start, duration = 20) {
-  audio.pause();
-  clearTimeout(audio.timer);
-
-  const play = () => {
-    audio.currentTime = start;
-    audio.play();
-    audio.timer = setTimeout(() => audio.pause(), duration * 1000);
-  };
-
-  if (audio.readyState >= 1) play();
-  else audio.addEventListener("loadedmetadata", play, { once: true });
-}
-
-/* YES CLICK */
-yesBtn.onclick = () => {
-  playSegment(document.getElementById("yesSong"), 87, 20);
-  question.textContent = "OMG YES 😍";
-  setTimeout(moveYes, 1200);
-};
-
 /* NO CLICK */
-noBtn.onclick = () => {
+noBtn.addEventListener("click", () => {
   playArea.style.display = "none";
   question.style.display = "none";
   result.style.display = "block";
 
-  playSegment(document.getElementById("noSong"), 34, 20);
+  playSegment(noSong, 34, 20);
 
   for (let i = 0; i < 30; i++) {
     const e = document.createElement("div");
@@ -166,8 +170,9 @@ noBtn.onclick = () => {
     document.body.appendChild(e);
     setTimeout(() => e.remove(), 3000);
   }
-};
+});
 </script>
+
 
 </body>
 </html>
