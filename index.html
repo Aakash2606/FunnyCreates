@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Funny Question Game</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: linear-gradient(120deg, #ff9a9e, #fad0c4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    flex-direction: column;
+  }
+
+  h1 {
+    font-size: 2.5em;
+    color: #fff;
+    text-shadow: 2px 2px 5px #ff69b4;
+    margin-bottom: 50px;
+  }
+
+  .btn {
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 20px;
+    position: absolute;
+    transition: all 0.1s;
+  }
+
+  #yes {
+    background-color: #4CAF50;
+    color: white;
+    left: 150px;
+    top: 150px;
+  }
+
+  #no {
+    background-color: #f44336;
+    color: white;
+    left: 350px;
+    top: 150px;
+  }
+
+  #memeContainer {
+    display: none; /* hidden initially */
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #memeContainer img {
+    width: 400px;
+    border-radius: 15px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<h1 id="question">Will you be there?</h1>
+<button id="yes" class="btn">Yes</button>
+<button id="no" class="btn">No</button>
+
+<!-- Hidden meme container -->
+<div id="memeContainer">
+  <img src="dog.gif" alt="Dog Meme">
+</div>
+
+<script>
+  const yesBtn = document.getElementById('yes');
+  const noBtn = document.getElementById('no');
+  const question = document.getElementById('question');
+  const memeContainer = document.getElementById('memeContainer');
+
+  // Yes button moves randomly when hovered (cannot be clicked)
+  yesBtn.addEventListener('mouseover', () => {
+    const x = Math.random() * (window.innerWidth - yesBtn.offsetWidth - 20);
+    const y = Math.random() * (window.innerHeight - yesBtn.offsetHeight - 20);
+    yesBtn.style.left = x + 'px';
+    yesBtn.style.top = y + 'px';
+  });
+
+  // No button click - show local GIF
+  noBtn.addEventListener('click', () => {
+    question.style.display = 'none';
+    yesBtn.style.display = 'none';
+    noBtn.style.display = 'none';
+    memeContainer.style.display = 'flex';
+  });
+</script>
+
+</body>
+</html>
