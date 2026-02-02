@@ -81,12 +81,13 @@ button {
 
   <div id="result">
     <h1>😭 Mujhe NO keh diya…</h1>
-    <img id="meme" src="dog.gif">
+    <img src="dog.gif">
   </div>
 </div>
 
-<audio id="yesSong" preload="metadata" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
-<audio id="noSong" preload="metadata" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
+<audio id="yesSong" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
+<audio id="noSong" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
+
 <script>
 const yesBtn = document.getElementById("yes");
 const noBtn = document.getElementById("no");
@@ -97,74 +98,82 @@ const result = document.getElementById("result");
 const yesSong = document.getElementById("yesSong");
 const noSong = document.getElementById("noSong");
 
-/* 😈 Hinglish Teasing Lines */
+/* 😈 Teasing text */
 const teasingLines = [
   "Mujhe na keh rahe ho? 😏",
-  "Itna bhaav khaana acchi baat nahi 😌",
+  "Itna bhaav kyun kha rahe ho? 😌",
   "Dil hai ya stone? 💔",
-  "Thoda sa YES bol do na 🥺",
-  "Aise tadpaoge kya? 😭",
-  "Sach batao, drama kar rahe ho na 😈",
-  "Ab toh limit cross ho rahi hai 😤",
-  "Kitna attitude hai tumme 😌",
-  "Dil toot gaya mera 💔",
-  "Bas karo… YES bol do 😭💖"
+  "YES bolne mein jaan ja rahi hai kya? 😭",
+  "Drama king / queen ho tum 😈",
+  "Bas bhi karo ab 😤",
+  "Itna attitude kis baat ka? 😌",
+  "Sach mein NO bol doge kya? 🥺",
+  "Ab meri patience khatam 😭",
+  "Last warning… YES bolo 💖"
 ];
 
 let teaseIndex = 0;
-let yesMusicStarted = false;
+let yesSongStarted = false;
 
-/* 🎯 MOVE YES BUTTON */
-function moveYes() {
+/* 🎯 Move YES once per click */
+function moveYesOnce() {
   const w = playArea.clientWidth - yesBtn.offsetWidth;
   const h = playArea.clientHeight - yesBtn.offsetHeight;
-
   yesBtn.style.left = Math.random() * w + "px";
   yesBtn.style.top = Math.random() * h + "px";
+}
+
+/* 😍 Background emojis */
+function dropEmojis(count, emoji) {
+  for (let i = 0; i < count; i++) {
+    const e = document.createElement("div");
+    e.className = "emoji";
+    e.textContent = emoji;
+    e.style.left = Math.random() * 100 + "vw";
+    document.body.appendChild(e);
+    setTimeout(() => e.remove(), 3000);
+  }
 }
 
 /* 💖 YES CLICK */
 yesBtn.addEventListener("click", () => {
 
-  // ▶ Start YES song ONLY ONCE (from beginning)
-  if (!yesMusicStarted) {
-    yesSong.currentTime = 0;
+  // ▶ Start YES song once from skipped time
+  if (!yesSongStarted) {
+    yesSong.currentTime = 87;
     yesSong.play().catch(() => {});
-    yesMusicStarted = true;
+    yesSongStarted = true;
   }
 
-  // 💬 Change teasing text
-  question.textContent =
-    teasingLines[teaseIndex % teasingLines.length];
+  // 💬 Change header text
+  question.textContent = teasingLines[teaseIndex % teasingLines.length];
   teaseIndex++;
 
-  // 😈 Move YES button
-  setTimeout(moveYes, 250);
+  // 😍 Emojis on every click
+  dropEmojis(8, "💖");
+
+  // 😈 Move YES once
+  moveYesOnce();
 });
 
 /* 💔 NO CLICK */
 noBtn.addEventListener("click", () => {
 
+  // 🛑 Stop YES song
+  yesSong.pause();
+  yesSong.currentTime = 0;
+
+  // ▶ Play NO song from skip
+  noSong.currentTime = 34;
+  noSong.play().catch(() => {});
+
   playArea.style.display = "none";
   question.style.display = "none";
   result.style.display = "block";
 
-  // ▶ Play NO song from skipped time
-  noSong.currentTime = 34;
-  noSong.play().catch(() => {});
-
-  // 😭 Crying emojis
-  for (let i = 0; i < 30; i++) {
-    const e = document.createElement("div");
-    e.className = "emoji";
-    e.textContent = "😭";
-    e.style.left = Math.random() * 100 + "vw";
-    document.body.appendChild(e);
-    setTimeout(() => e.remove(), 3000);
-  }
+  dropEmojis(25, "😭");
 });
 </script>
-
 
 </body>
 </html>
