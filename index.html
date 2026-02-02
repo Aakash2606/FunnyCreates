@@ -6,13 +6,11 @@
 <title>Funny Question Game</title>
 
 <style>
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   body {
     margin: 0;
-    height: 100svh; /* mobile-safe viewport */
+    height: 100svh;
     background: linear-gradient(120deg, #ff9a9e, #fad0c4);
     font-family: Arial, sans-serif;
     overflow: hidden;
@@ -46,6 +44,8 @@
     border-radius: 10px;
     cursor: pointer;
     position: absolute;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   #yes {
@@ -73,18 +73,6 @@
     border-radius: 15px;
     margin-top: 20px;
   }
-
-  /* Mobile tuning */
-  @media (max-width: 600px) {
-    h1 {
-      font-size: 1.7rem;
-    }
-
-    button {
-      font-size: 16px;
-      padding: 12px 22px;
-    }
-  }
 </style>
 </head>
 
@@ -94,8 +82,8 @@
   <h1 id="question">Will you be there? 🥺</h1>
 
   <div class="play-area" id="playArea">
-    <button id="yes">Yes</button>
-    <button id="no">No</button>
+    <button id="yes" type="button">Yes</button>
+    <button id="no" type="button">No</button>
   </div>
 
   <div id="result">
@@ -111,12 +99,14 @@
   const result = document.getElementById("result");
   const question = document.getElementById("question");
 
-  function moveYesFast() {
-    const areaRect = playArea.getBoundingClientRect();
-    const btnRect = yesBtn.getBoundingClientRect();
+  function moveYes() {
+    const areaW = playArea.clientWidth;
+    const areaH = playArea.clientHeight;
+    const btnW = yesBtn.offsetWidth;
+    const btnH = yesBtn.offsetHeight;
 
-    const maxX = areaRect.width - btnRect.width;
-    const maxY = areaRect.height - btnRect.height;
+    const maxX = Math.max(0, areaW - btnW);
+    const maxY = Math.max(0, areaH - btnH);
 
     const x = Math.random() * maxX;
     const y = Math.random() * maxY;
@@ -125,14 +115,21 @@
     yesBtn.style.top = y + "px";
   }
 
+  // NEVER allow click on YES
+  yesBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    moveYes();
+  });
+
   // Desktop
-  yesBtn.addEventListener("mouseenter", moveYesFast);
-  yesBtn.addEventListener("mousemove", moveYesFast);
+  yesBtn.addEventListener("mouseenter", moveYes);
+  yesBtn.addEventListener("mousemove", moveYes);
 
   // Mobile
   yesBtn.addEventListener("touchstart", (e) => {
     e.preventDefault();
-    moveYesFast();
+    moveYes();
   });
 
   noBtn.addEventListener("click", () => {
