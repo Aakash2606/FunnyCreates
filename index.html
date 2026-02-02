@@ -86,7 +86,7 @@ button {
 </div>
 
 <audio id="yesSong" preload="metadata" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
-<audio id="noSong" preload="metadata" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
+<audio id="noSong"  preload="metadata" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
 
 <script>
 const yesBtn = document.getElementById("yes");
@@ -98,7 +98,7 @@ const result = document.getElementById("result");
 const yesSong = document.getElementById("yesSong");
 const noSong  = document.getElementById("noSong");
 
-/* 😈 Teasing lines */
+/* 😈 Teasing text */
 const teasingLines = [
   "Pakad ke dikhao 😏",
   "YES itna mushkil hai kya 😈",
@@ -108,8 +108,9 @@ const teasingLines = [
   "Aaj YES milne se raha 😎"
 ];
 let teaseIndex = 0;
+let yesSongStarted = false;
 
-/* 🔊 MOBILE-SAFE PLAY FROM TIME */
+/* 🔊 Mobile-safe play from time */
 function playFromTime(audio, time) {
   audio.pause();
   audio.play().then(() => {
@@ -125,7 +126,7 @@ function playFromTime(audio, time) {
   });
 }
 
-/* 😈 YES RUN AWAY */
+/* 😈 Move YES */
 function moveYes() {
   const w = playArea.clientWidth - yesBtn.offsetWidth;
   const h = playArea.clientHeight - yesBtn.offsetHeight;
@@ -133,20 +134,34 @@ function moveYes() {
   yesBtn.style.left = Math.random() * w + "px";
   yesBtn.style.top  = Math.random() * h + "px";
 
-  question.textContent = teasingLines[teaseIndex % teasingLines.length];
+  question.textContent =
+    teasingLines[teaseIndex % teasingLines.length];
   teaseIndex++;
 }
 
-/* Desktop hover */
+/* 🖱 Desktop hover near YES */
 document.addEventListener("mousemove", (e) => {
   const r = yesBtn.getBoundingClientRect();
   const dx = e.clientX - (r.left + r.width / 2);
   const dy = e.clientY - (r.top + r.height / 2);
-  if (Math.sqrt(dx*dx + dy*dy) < 120) moveYes();
+
+  if (Math.sqrt(dx*dx + dy*dy) < 120) {
+    if (!yesSongStarted) {
+      playFromTime(yesSong, 34); // ✅ hover song start
+      yesSongStarted = true;
+    }
+    moveYes();
+  }
 });
 
-/* Mobile touch */
-document.addEventListener("touchstart", () => moveYes());
+/* 📱 Mobile touch */
+document.addEventListener("touchstart", () => {
+  if (!yesSongStarted) {
+    playFromTime(yesSong, 34);
+    yesSongStarted = true;
+  }
+  moveYes();
+});
 
 /* 💔 NO CLICK */
 noBtn.addEventListener("click", () => {
@@ -155,7 +170,7 @@ noBtn.addEventListener("click", () => {
   yesSong.pause();
   yesSong.currentTime = 0;
 
-  // Vibrate mobile
+  // Mobile vibration
   if (navigator.vibrate) {
     navigator.vibrate([200, 100, 200]);
   }
@@ -175,11 +190,6 @@ noBtn.addEventListener("click", () => {
     document.body.appendChild(e);
     setTimeout(() => e.remove(), 3000);
   }
-});
-
-/* OPTIONAL: if YES somehow clicked, play from 34 sec */
-yesBtn.addEventListener("click", () => {
-  playFromTime(yesSong, 34);
 });
 </script>
 
