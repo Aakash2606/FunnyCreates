@@ -97,24 +97,22 @@ const result = document.getElementById("result");
 const yesSong = document.getElementById("yesSong");
 const noSong = document.getElementById("noSong");
 
+/* 😈 Hinglish Teasing Lines */
 const teasingLines = [
-  "Itna mushkil sawal hai kya? 😏",
-  "Soch lo ache se… dil se 💖",
-  "Itna bhi kya bhaav khaana 😌",
-  "Dil toot jayega mera 💔",
-  "Last chance hai… YES bol do 🥺",
-  "Ab toh sharam kar lo 😭"
+  "Mujhe na keh rahe ho? 😏",
+  "Itna bhaav khaana acchi baat nahi 😌",
+  "Dil hai ya stone? 💔",
+  "Thoda sa YES bol do na 🥺",
+  "Aise tadpaoge kya? 😭",
+  "Sach batao, drama kar rahe ho na 😈",
+  "Ab toh limit cross ho rahi hai 😤",
+  "Kitna attitude hai tumme 😌",
+  "Dil toot gaya mera 💔",
+  "Bas karo… YES bol do 😭💖"
 ];
 
 let teaseIndex = 0;
-
-/* 🔊 PLAY AUDIO SAFELY (CLICK CONTEXT) */
-function playSegment(audio, start, duration = 20) {
-  audio.pause();
-  audio.currentTime = start;
-  audio.play().catch(() => {}); // mobile safe
-  setTimeout(() => audio.pause(), duration * 1000);
-}
+let yesMusicStarted = false;
 
 /* 🎯 MOVE YES BUTTON */
 function moveYes() {
@@ -125,35 +123,37 @@ function moveYes() {
   yesBtn.style.top = Math.random() * h + "px";
 }
 
-/* 💖 YES CLICK – TEASE + MUSIC */
+/* 💖 YES CLICK */
 yesBtn.addEventListener("click", () => {
 
-  // 1️⃣ Play music immediately
-  playSegment(yesSong, 87, 20);
-
-  // 2️⃣ Change teasing text
-  if (teaseIndex < teasingLines.length) {
-    question.textContent = teasingLines[teaseIndex];
-    teaseIndex++;
-  } else {
-    question.textContent = "OMG YES 😍💖";
+  // ▶ Start YES song ONLY ONCE (from beginning)
+  if (!yesMusicStarted) {
+    yesSong.currentTime = 0;
+    yesSong.play().catch(() => {});
+    yesMusicStarted = true;
   }
 
-  // 3️⃣ Move YES after click
-  setTimeout(moveYes, 300);
+  // 💬 Change teasing text
+  question.textContent =
+    teasingLines[teaseIndex % teasingLines.length];
+  teaseIndex++;
+
+  // 😈 Move YES button
+  setTimeout(moveYes, 250);
 });
 
-/* 💔 NO CLICK – SKIP MUSIC + RESULT */
+/* 💔 NO CLICK */
 noBtn.addEventListener("click", () => {
 
   playArea.style.display = "none";
   question.style.display = "none";
   result.style.display = "block";
 
-  // 🔊 Play NO song from middle (NOT start)
-  playSegment(noSong, 34, 20);
+  // ▶ Play NO song from skipped time
+  noSong.currentTime = 34;
+  noSong.play().catch(() => {});
 
-  // 😭 Emojis
+  // 😭 Crying emojis
   for (let i = 0; i < 30; i++) {
     const e = document.createElement("div");
     e.className = "emoji";
