@@ -12,7 +12,7 @@ body {
   margin: 0;
   height: 100svh;
   background: linear-gradient(120deg, #ff4e8a, #ff9a9e);
-  font-family: 'Arial', sans-serif;
+  font-family: Arial, sans-serif;
   overflow: hidden;
 }
 
@@ -42,7 +42,6 @@ button {
   border-radius: 14px;
   position: absolute;
   cursor: pointer;
-  user-select: none;
 }
 
 #yes {
@@ -99,9 +98,12 @@ button {
   </div>
 </div>
 
-<!-- 🎵 SONGS -->
-<audio id="yesSong" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
-<audio id="noSong" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
+<!-- 🎵 AUDIO (NOT TRIMMED) -->
+<audio id="yesSong" preload="metadata"
+  src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
+
+<audio id="noSong" preload="metadata"
+  src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
 
 <script>
 const yesBtn = document.getElementById("yes");
@@ -111,70 +113,63 @@ const result = document.getElementById("result");
 const question = document.getElementById("question");
 const memeImg = document.getElementById("meme");
 
-const yesTexts = [
-  "Mujhe haan keh rahi ho? 😏",
-  "Pakad ke dikhao 😜",
-  "Itni jaldi haan? 😂",
-  "Sharma rahi ho kya 🙈",
-  "Mujhe na keh rahe ho tum? 😈",
-  "Drama mat karo 😏",
-  "Soch lo ache se 💖",
-  "Aaj bhaag raha hoon 💨"
-];
-
-const teasingLines = [
-  "Itna mushkil sawal hai kya? 😏",
-  "Main wait kar raha hoon 😌",
-  "Dil toot jayega mera 💔",
-  "Valentine toh tum hi ho 🥺",
-  "Yes bol do na please 😭"
-];
-
 const memes = ["dog.gif", "sad.gif", "puneet.gif"];
 let tries = 0;
 
 /* MOVE YES BUTTON */
 function moveYes() {
   tries++;
-  question.textContent = teasingLines[tries - 1] || "Ab toh YES bolna hi padega 😌💖";
-
   const areaW = playArea.clientWidth;
   const areaH = playArea.clientHeight;
-
   yesBtn.style.left = Math.random() * (areaW - 120) + "px";
   yesBtn.style.top = Math.random() * (areaH - 60) + "px";
-  yesBtn.textContent = yesTexts[Math.floor(Math.random() * yesTexts.length)];
 }
 
-/* RUN AWAY WHEN CLOSE */
+/* RUN AWAY */
 document.addEventListener("pointermove", e => {
   const rect = yesBtn.getBoundingClientRect();
   const dx = e.clientX - (rect.left + rect.width / 2);
   const dy = e.clientY - (rect.top + rect.height / 2);
-  if (Math.sqrt(dx*dx + dy*dy) < 130) moveYes();
+  if (Math.sqrt(dx*dx + dy*dy) < 120) moveYes();
 });
 
-/* HELPER: Play song from specific time for 20s */
-function playSongSegment(audioElement, startTime, duration = 20) {
-  audioElement.currentTime = startTime;
-  audioElement.play();
-  setTimeout(() => audioElement.pause(), duration * 1000);
+/* 🔥 MOBILE SAFE SONG SEGMENT PLAYER */
+function playSongSegment(audio, startTime, playFor = 20) {
+  audio.pause();
+  audio.currentTime = 0;
+
+  clearTimeout(audio.stopTimer);
+
+  const playNow = () => {
+    audio.currentTime = startTime;
+    audio.play().catch(() => {});
+    audio.stopTimer = setTimeout(() => audio.pause(), playFor * 1000);
+  };
+
+  if (audio.readyState >= 1) {
+    playNow();
+  } else {
+    audio.addEventListener("loadedmetadata", playNow, { once: true });
+    audio.load();
+  }
 }
 
-/* FAKE YES CLICK */
+/* YES CLICK */
 yesBtn.addEventListener("click", () => {
-  const yesSong = document.getElementById("yesSong");
-  yesSong.volume = 0.8;
-  playSongSegment(yesSong, 87); // 1:27 = 87 seconds
+  playSongSegment(
+    document.getElementById("yesSong"),
+    87,   // 1:27 skip
+    20
+  );
 
-  question.textContent = "OMG YES 😍😍😍";
+  question.textContent = "OMG YES 😍";
   setTimeout(() => {
     question.textContent = "Mazak tha 😈 phir try karo";
     moveYes();
-  }, 1000);
+  }, 1200);
 });
 
-/* NO CLICK = CRY MODE */
+/* NO CLICK */
 noBtn.addEventListener("click", () => {
   playArea.style.display = "none";
   question.style.display = "none";
@@ -182,11 +177,13 @@ noBtn.addEventListener("click", () => {
 
   memeImg.src = memes[Math.floor(Math.random() * memes.length)];
 
-  const noSong = document.getElementById("noSong");
-  noSong.volume = 0.8;
-  playSongSegment(noSong, 34); // skip first 34 sec, play next 20 sec
+  playSongSegment(
+    document.getElementById("noSong"),
+    34,   // 34 sec skip
+    20
+  );
 
-  if (navigator.vibrate) navigator.vibrate(400);
+  if (navigator.vibrate) navigator.vibrate(500);
 
   for (let i = 0; i < 40; i++) {
     const e = document.createElement("div");
@@ -196,11 +193,6 @@ noBtn.addEventListener("click", () => {
     document.body.appendChild(e);
     setTimeout(() => e.remove(), 3000);
   }
-});
-
-/* TAB TITLE PRANK */
-document.addEventListener("visibilitychange", () => {
-  document.title = document.hidden ? "Mat jao na 😭" : "Aagayi 😏💖";
 });
 </script>
 
