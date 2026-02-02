@@ -85,6 +85,9 @@ button {
   </div>
 </div>
 
+<audio id="yesSong" preload="metadata" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
+<audio id="noSong" preload="metadata" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
+
 <script>
 const yesBtn = document.getElementById("yes");
 const noBtn  = document.getElementById("no");
@@ -92,20 +95,37 @@ const playArea = document.getElementById("playArea");
 const question = document.getElementById("question");
 const result = document.getElementById("result");
 
-/* 😈 Teasing text */
+const yesSong = document.getElementById("yesSong");
+const noSong  = document.getElementById("noSong");
+
+/* 😈 Teasing lines */
 const teasingLines = [
-  "Arre pakadne ki koshish mat karo 😏",
-  "Itna aasan nahi hai YES 😈",
-  "Mujhe chhoo ke dikhao 😌",
+  "Pakad ke dikhao 😏",
+  "YES itna mushkil hai kya 😈",
   "Fast ho jao thoda 😜",
   "Lagta hai NO hi likha hai 😭",
-  "Thak gaye kya? 😎",
-  "Abhi bhi try kar rahe ho? 😂"
+  "Try karte raho 😂",
+  "Aaj YES milne se raha 😎"
 ];
-
 let teaseIndex = 0;
 
-/* 🎯 Move YES anywhere */
+/* 🔊 MOBILE-SAFE PLAY FROM TIME */
+function playFromTime(audio, time) {
+  audio.pause();
+  audio.play().then(() => {
+    audio.currentTime = time;
+  }).catch(() => {});
+
+  audio.addEventListener("timeupdate", function fix() {
+    if (audio.currentTime < time - 0.3) {
+      audio.currentTime = time;
+    } else {
+      audio.removeEventListener("timeupdate", fix);
+    }
+  });
+}
+
+/* 😈 YES RUN AWAY */
 function moveYes() {
   const w = playArea.clientWidth - yesBtn.offsetWidth;
   const h = playArea.clientHeight - yesBtn.offsetHeight;
@@ -117,7 +137,7 @@ function moveYes() {
   teaseIndex++;
 }
 
-/* 🖱 Desktop: hover / move near YES */
+/* Desktop hover */
 document.addEventListener("mousemove", (e) => {
   const r = yesBtn.getBoundingClientRect();
   const dx = e.clientX - (r.left + r.width / 2);
@@ -125,23 +145,29 @@ document.addEventListener("mousemove", (e) => {
   if (Math.sqrt(dx*dx + dy*dy) < 120) moveYes();
 });
 
-/* 📱 Mobile: touch near YES */
+/* Mobile touch */
 document.addEventListener("touchstart", () => moveYes());
 
 /* 💔 NO CLICK */
 noBtn.addEventListener("click", () => {
 
-  // 📳 Vibrate (mobile only)
+  // Stop YES song
+  yesSong.pause();
+  yesSong.currentTime = 0;
+
+  // Vibrate mobile
   if (navigator.vibrate) {
     navigator.vibrate([200, 100, 200]);
   }
+
+  // Play NO song at 1:27
+  playFromTime(noSong, 87);
 
   playArea.style.display = "none";
   question.style.display = "none";
   result.style.display = "block";
 
-  // 😭 Emojis
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 25; i++) {
     const e = document.createElement("div");
     e.className = "emoji";
     e.textContent = "😭";
@@ -149,6 +175,11 @@ noBtn.addEventListener("click", () => {
     document.body.appendChild(e);
     setTimeout(() => e.remove(), 3000);
   }
+});
+
+/* OPTIONAL: if YES somehow clicked, play from 34 sec */
+yesBtn.addEventListener("click", () => {
+  playFromTime(yesSong, 34);
 });
 </script>
 
