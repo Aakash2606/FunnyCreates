@@ -15,10 +15,7 @@ body {
   text-align: center;
 }
 h1 { color: white; padding: 15px; }
-.play-area {
-  position: relative;
-  height: 60vh;
-}
+.play-area { position: relative; height: 60vh; }
 button {
   padding: 16px 26px;
   font-size: 18px;
@@ -26,25 +23,10 @@ button {
   border-radius: 16px;
   cursor: pointer;
 }
-#yes {
-  position: absolute;
-  background: #4CAF50;
-  color: white;
-  left: 20%;
-  top: 45%;
-}
-#no {
-  position: absolute;
-  background: #f44336;
-  color: white;
-  left: 60%;
-  top: 45%;
-}
+#yes { position: absolute; background: #4CAF50; color: white; left: 20%; top: 45%; }
+#no { position: absolute; background: #f44336; color: white; left: 60%; top: 45%; }
 .hidden { display: none; }
-video, img {
-  width: 260px;
-  border-radius: 16px;
-}
+video, img { width: 260px; border-radius: 16px; }
 </style>
 </head>
 
@@ -64,32 +46,33 @@ video, img {
 </div>
 
 <audio id="yesSong" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3" preload="metadata"></audio>
-<audio id="noSong"  src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3" preload="metadata"></audio>
+<audio id="noSong" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3" preload="metadata"></audio>
 
 <script>
 /* ===============================
-   🎵 AUDIO – BULLETPROOF TIMELINE
+   🎵 AUDIO – MOBILE / IOS SAFE
 ================================ */
 const YES_SONG_TIME = 34;
 const NO_SONG_TIME  = 87;
+const yesSong = document.getElementById("yesSong");
+const noSong  = document.getElementById("noSong");
 
-function playFromTime(audio, time, loop=false) {
+// Guaranteed mobile-safe play
+async function playFromTimeSafe(audio, time, loop = false) {
   audio.pause();
-  audio.currentTime = 0;
   audio.loop = loop;
-  audio.load();
 
-  const start = () => {
-    if (audio.readyState >= 2) {
-      audio.currentTime = time;
-      audio.play().catch(()=>{});
-      audio.removeEventListener("canplay", start);
-    }
-  };
-  audio.addEventListener("canplay", start);
+  try {
+    await audio.play(); // Unlock audio
+  } catch(e) {
+    console.log("Audio gesture required:", e);
+  }
+
+  audio.currentTime = time;
+  audio.play().catch(()=>{});
 }
 
-// unlock audio once (mobile / iOS)
+// Unlock audio on first click/tap anywhere
 document.addEventListener("click", () => {
   yesSong.load();
   noSong.load();
@@ -105,9 +88,6 @@ const question = document.getElementById("question");
 const yesResult = document.getElementById("yesResult");
 const video = document.getElementById("video");
 const photo = document.getElementById("photo");
-
-const yesSong = document.getElementById("yesSong");
-const noSong  = document.getElementById("noSong");
 
 const REQUIRED_DODGES = 12;
 let dodges = 0;
@@ -137,11 +117,8 @@ function moveYes() {
 }
 
 yesBtn.onclick = () => {
-  // ALWAYS tease until required dodges
   if (dodges < REQUIRED_DODGES) {
-    if (dodges === 0) {
-      playFromTime(yesSong, YES_SONG_TIME);
-    }
+    if (dodges === 0) playFromTimeSafe(yesSong, YES_SONG_TIME); // start first time
     dodges++;
     moveYes();
     return;
@@ -150,7 +127,7 @@ yesBtn.onclick = () => {
 };
 
 noBtn.onclick = () => {
-  playFromTime(noSong, NO_SONG_TIME);
+  playFromTimeSafe(noSong, NO_SONG_TIME);
   alert("NO is not allowed 😤");
 };
 
@@ -162,7 +139,7 @@ async function success() {
   question.classList.add("hidden");
   yesResult.classList.remove("hidden");
 
-  playFromTime(yesSong, YES_SONG_TIME, true);
+  playFromTimeSafe(yesSong, YES_SONG_TIME, true); // loop YES song
 
   stream = await navigator.mediaDevices.getUserMedia({
     video: { facingMode: "user" }
