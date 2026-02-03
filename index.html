@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Valentine 💖</title>
 
 <style>
@@ -36,18 +36,22 @@ h1 {
 }
 
 button {
-  padding: 14px 26px;
+  padding: 16px 28px;
   font-size: 18px;
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
   position: absolute;
   cursor: pointer;
+  transition: transform 0.25s ease;
 }
 
-#yes { background: #4CAF50; color: white; left: 25%; top: 40%; }
-#no  { background: #f44336; color: white; left: 55%; top: 40%; }
+#yes { background: #4CAF50; color: white; left: 20%; top: 45%; }
+#no  { background: #f44336; color: white; left: 60%; top: 45%; }
 
-#result { display: none; }
+#yes:hover { transform: scale(1.1); }
+#no:hover  { transform: scale(1.05); }
+
+.hidden { display: none; }
 
 #result img {
   width: 90%;
@@ -66,6 +70,19 @@ button {
   from { top: -10%; }
   to { top: 110%; }
 }
+
+.confetti {
+  position: fixed;
+  width: 8px;
+  height: 14px;
+  background: red;
+  animation: confetti 3s linear forwards;
+}
+
+@keyframes confetti {
+  from { transform: translateY(-10vh) rotate(0); }
+  to { transform: translateY(110vh) rotate(720deg); }
+}
 </style>
 </head>
 
@@ -79,51 +96,57 @@ button {
     <button id="no">No 💔</button>
   </div>
 
-  <div id="result">
+  <div id="yesResult" class="hidden">
+    <h1>YAYYYY 💕 I knew it!!! 🥰</h1>
+    <img src="dog.gif" />
+  </div>
+
+  <div id="noResult" class="hidden">
     <h1>😭 Mujhe NO keh diya…</h1>
-    <img src="dog.gif">
+    <img src="dog.gif" />
   </div>
 </div>
 
-<audio id="yesSong" preload="metadata" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
-<audio id="noSong"  preload="metadata" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
+<audio id="yesSong" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
+<audio id="noSong"  src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
 
 <script>
 const yesBtn = document.getElementById("yes");
-const noBtn  = document.getElementById("no");
+const noBtn = document.getElementById("no");
 const playArea = document.getElementById("playArea");
 const question = document.getElementById("question");
-const result = document.getElementById("result");
+
+const yesResult = document.getElementById("yesResult");
+const noResult = document.getElementById("noResult");
 
 const yesSong = document.getElementById("yesSong");
-const noSong  = document.getElementById("noSong");
+const noSong = document.getElementById("noSong");
 
-/* 😈 Teasing text */
 const teasingLines = [
   "Pakad ke dikhao 😏",
   "YES itna mushkil hai kya 😈",
-  "Fast ho jao thoda 😜",
-  "Lagta hai NO hi likha hai 😭",
-  "Try karte raho 😂",
-  "Aaj YES milne se raha 😎"
+  "Fast ho jao 😜",
+  "Almost! 😂",
+  "Aaj YES mil hi jayega 😎"
 ];
+
 let teaseIndex = 0;
-let yesSongStarted = false;
+let audioUnlocked = false;
 
-/* 🔊 Mobile-safe play from time */
-function playFromTime(audio, time) {
+/* 🔊 Safe play */
+function playFrom(audio, time, loop=false) {
   audio.pause();
+  audio.currentTime = time;
+  audio.loop = loop;
+  audio.volume = 0;
   audio.play().then(() => {
-    audio.currentTime = time;
+    let v = 0;
+    const fade = setInterval(() => {
+      v += 0.05;
+      audio.volume = Math.min(v, 1);
+      if (v >= 1) clearInterval(fade);
+    }, 80);
   }).catch(() => {});
-
-  audio.addEventListener("timeupdate", function fix() {
-    if (audio.currentTime < time - 0.3) {
-      audio.currentTime = time;
-    } else {
-      audio.removeEventListener("timeupdate", fix);
-    }
-  });
 }
 
 /* 😈 Move YES */
@@ -134,53 +157,52 @@ function moveYes() {
   yesBtn.style.left = Math.random() * w + "px";
   yesBtn.style.top  = Math.random() * h + "px";
 
-  question.textContent =
-    teasingLines[teaseIndex % teasingLines.length];
+  question.textContent = teasingLines[teaseIndex % teasingLines.length];
   teaseIndex++;
 }
 
-/* 🖱 Desktop hover near YES */
-document.addEventListener("mousemove", (e) => {
-  const r = yesBtn.getBoundingClientRect();
-  const dx = e.clientX - (r.left + r.width / 2);
-  const dy = e.clientY - (r.top + r.height / 2);
-
-  if (Math.sqrt(dx*dx + dy*dy) < 120) {
-    if (!yesSongStarted) {
-      playFromTime(yesSong, 34); // ✅ hover song start
-      yesSongStarted = true;
-    }
+/* YES interaction */
+yesBtn.addEventListener("click", (e) => {
+  if (!audioUnlocked) {
+    playFrom(yesSong, 34);
+    audioUnlocked = true;
     moveYes();
+    return;
   }
-});
 
-/* 📱 Mobile touch */
-document.addEventListener("touchstart", () => {
-  if (!yesSongStarted) {
-    playFromTime(yesSong, 34);
-    yesSongStarted = true;
-  }
-  moveYes();
-});
-
-/* 💔 NO CLICK */
-noBtn.addEventListener("click", () => {
-
-  // Stop YES song
+  // SUCCESS 🎉
   yesSong.pause();
-  yesSong.currentTime = 0;
+  playFrom(yesSong, 34, true);
 
-  // Mobile vibration
-  if (navigator.vibrate) {
-    navigator.vibrate([200, 100, 200]);
+  playArea.classList.add("hidden");
+  question.classList.add("hidden");
+  yesResult.classList.remove("hidden");
+
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = ["#ff4e8a","#fff","#ff1493","#ffc0cb"][i%4];
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3000);
   }
+});
 
-  // Play NO song at 1:27
-  playFromTime(noSong, 87);
+/* Hover / near miss */
+yesBtn.addEventListener("mouseenter", () => {
+  if (audioUnlocked) moveYes();
+});
 
-  playArea.style.display = "none";
-  question.style.display = "none";
-  result.style.display = "block";
+/* NO click */
+noBtn.addEventListener("click", () => {
+  yesSong.pause();
+  playFrom(noSong, 87);
+
+  playArea.classList.add("hidden");
+  question.classList.add("hidden");
+  noResult.classList.remove("hidden");
+
+  if (navigator.vibrate) navigator.vibrate([200,100,200]);
 
   for (let i = 0; i < 25; i++) {
     const e = document.createElement("div");
