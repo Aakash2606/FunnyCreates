@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Valentine 💖</title>
 
 <style>
@@ -19,7 +19,7 @@ body {
 .container {
   height: 100%;
   text-align: center;
-  padding-top: 40px;
+  padding-top: 30px;
 }
 
 h1 {
@@ -48,8 +48,16 @@ button {
 #yes { background: #4CAF50; color: white; left: 20%; top: 45%; }
 #no  { background: #f44336; color: white; left: 60%; top: 45%; }
 
-#yes:hover { transform: scale(1.1); }
-#no:hover  { transform: scale(1.05); }
+.top-btn {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(255,255,255,0.25);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+}
 
 .hidden { display: none; }
 
@@ -60,7 +68,7 @@ button {
   margin-top: 20px;
 }
 
-.emoji {
+.emoji, .heart {
   position: fixed;
   font-size: 26px;
   animation: fall 3s linear forwards;
@@ -75,7 +83,6 @@ button {
   position: fixed;
   width: 8px;
   height: 14px;
-  background: red;
   animation: confetti 3s linear forwards;
 }
 
@@ -88,8 +95,10 @@ button {
 
 <body>
 
+<button id="langBtn" class="top-btn">HI</button>
+
 <div class="container">
-  <h1 id="question">Will you be my Valentine? 💝🥺</h1>
+  <h1 id="question"></h1>
 
   <div class="play-area" id="playArea">
     <button id="yes">Yes 💖</button>
@@ -97,43 +106,86 @@ button {
   </div>
 
   <div id="yesResult" class="hidden">
-    <h1>YAYYYY 💕 I knew it!!! 🥰</h1>
-    <img src="dog.gif" />
+    <h1 id="yesText"></h1>
+    <img src="dog.gif">
   </div>
 
   <div id="noResult" class="hidden">
-    <h1>😭 Mujhe NO keh diya…</h1>
-    <img src="dog.gif" />
+    <h1 id="noText"></h1>
+    <img src="dog.gif">
   </div>
 </div>
 
 <audio id="yesSong" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
-<audio id="noSong"  src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
+<audio id="noSong" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
 
 <script>
+/* =========================
+   💑 CUSTOM COUPLE NAMES
+========================= */
+const fromName = "Aakash";
+const toName   = "You";
+
+/* =========================
+   🌍 LANGUAGE DATA
+========================= */
+const text = {
+  en: {
+    question: `Will you be my Valentine, ${toName}? 💝🥺`,
+    yesWin: `YAY ${toName}! ❤️ ${fromName} is officially yours 😍`,
+    noLose: "😭 You broke my heart…"
+  },
+  hi: {
+    question: `${toName}, meri Valentine banogi? 💖🥺`,
+    yesWin: `YAY ${toName}! ❤️ ${fromName} tumhara ho gaya 😍`,
+    noLose: "😭 Dil tod diya yaar…"
+  }
+};
+
+let lang = "en";
+
+/* =========================
+   🎵 AUDIO SETTINGS
+========================= */
+const YES_START = 34;
+const NO_START  = 87;
+
+/* =========================
+   GAME LOGIC
+========================= */
 const yesBtn = document.getElementById("yes");
 const noBtn = document.getElementById("no");
-const playArea = document.getElementById("playArea");
 const question = document.getElementById("question");
-
+const yesText = document.getElementById("yesText");
+const noText = document.getElementById("noText");
+const playArea = document.getElementById("playArea");
 const yesResult = document.getElementById("yesResult");
 const noResult = document.getElementById("noResult");
+const langBtn = document.getElementById("langBtn");
 
 const yesSong = document.getElementById("yesSong");
 const noSong = document.getElementById("noSong");
 
-const teasingLines = [
-  "Pakad ke dikhao 😏",
-  "YES itna mushkil hai kya 😈",
-  "Fast ho jao 😜",
-  "Almost! 😂",
-  "Aaj YES mil hi jayega 😎"
-];
-
-let teaseIndex = 0;
+let dodgeCount = 0;
 let audioUnlocked = false;
 
-/* 🔊 Safe play */
+/* =========================
+   FUNCTIONS
+========================= */
+function updateText() {
+  question.textContent = text[lang].question;
+  yesText.textContent = text[lang].yesWin;
+  noText.textContent = text[lang].noLose;
+}
+
+updateText();
+
+langBtn.onclick = () => {
+  lang = lang === "en" ? "hi" : "en";
+  langBtn.textContent = lang.toUpperCase();
+  updateText();
+};
+
 function playFrom(audio, time, loop=false) {
   audio.pause();
   audio.currentTime = time;
@@ -143,60 +195,72 @@ function playFrom(audio, time, loop=false) {
     let v = 0;
     const fade = setInterval(() => {
       v += 0.05;
-      audio.volume = Math.min(v, 1);
+      audio.volume = Math.min(v,1);
       if (v >= 1) clearInterval(fade);
     }, 80);
-  }).catch(() => {});
+  }).catch(()=>{});
 }
 
-/* 😈 Move YES */
 function moveYes() {
   const w = playArea.clientWidth - yesBtn.offsetWidth;
   const h = playArea.clientHeight - yesBtn.offsetHeight;
-
-  yesBtn.style.left = Math.random() * w + "px";
-  yesBtn.style.top  = Math.random() * h + "px";
-
-  question.textContent = teasingLines[teaseIndex % teasingLines.length];
-  teaseIndex++;
+  yesBtn.style.left = Math.random()*w + "px";
+  yesBtn.style.top  = Math.random()*h + "px";
 }
 
-/* YES interaction */
-yesBtn.addEventListener("click", (e) => {
+/* =========================
+   YES BUTTON
+========================= */
+yesBtn.onclick = () => {
   if (!audioUnlocked) {
-    playFrom(yesSong, 34);
+    playFrom(yesSong, YES_START);
     audioUnlocked = true;
+  }
+
+  if (dodgeCount < 3) {
+    dodgeCount++;
     moveYes();
     return;
   }
 
   // SUCCESS 🎉
   yesSong.pause();
-  playFrom(yesSong, 34, true);
+  playFrom(yesSong, YES_START, true);
 
   playArea.classList.add("hidden");
   question.classList.add("hidden");
   yesResult.classList.remove("hidden");
 
-  for (let i = 0; i < 40; i++) {
-    const c = document.createElement("div");
-    c.className = "confetti";
-    c.style.left = Math.random() * 100 + "vw";
-    c.style.background = ["#ff4e8a","#fff","#ff1493","#ffc0cb"][i%4];
+  for (let i=0;i<40;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=["#ff4e8a","#fff","#ffc0cb","#ff1493"][i%4];
     document.body.appendChild(c);
-    setTimeout(() => c.remove(), 3000);
+    setTimeout(()=>c.remove(),3000);
   }
-});
 
-/* Hover / near miss */
-yesBtn.addEventListener("mouseenter", () => {
-  if (audioUnlocked) moveYes();
-});
+  for (let i=0;i<20;i++){
+    const h=document.createElement("div");
+    h.className="heart";
+    h.textContent="💖";
+    h.style.left=Math.random()*100+"vw";
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),3000);
+  }
+};
 
-/* NO click */
-noBtn.addEventListener("click", () => {
+/* Desktop tease */
+yesBtn.onmouseenter = () => {
+  if (audioUnlocked && dodgeCount < 3) moveYes();
+};
+
+/* =========================
+   NO BUTTON
+========================= */
+noBtn.onclick = () => {
   yesSong.pause();
-  playFrom(noSong, 87);
+  playFrom(noSong, NO_START);
 
   playArea.classList.add("hidden");
   question.classList.add("hidden");
@@ -204,15 +268,15 @@ noBtn.addEventListener("click", () => {
 
   if (navigator.vibrate) navigator.vibrate([200,100,200]);
 
-  for (let i = 0; i < 25; i++) {
-    const e = document.createElement("div");
-    e.className = "emoji";
-    e.textContent = "😭";
-    e.style.left = Math.random() * 100 + "vw";
+  for (let i=0;i<25;i++){
+    const e=document.createElement("div");
+    e.className="emoji";
+    e.textContent="😭";
+    e.style.left=Math.random()*100+"vw";
     document.body.appendChild(e);
-    setTimeout(() => e.remove(), 3000);
+    setTimeout(()=>e.remove(),3000);
   }
-});
+};
 </script>
 
 </body>
