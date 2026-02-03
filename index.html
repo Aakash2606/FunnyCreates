@@ -36,246 +36,180 @@ h1 {
 }
 
 button {
-  padding: 16px 28px;
+  padding: 16px 26px;
   font-size: 18px;
   border: none;
   border-radius: 16px;
-  position: absolute;
   cursor: pointer;
-  transition: transform 0.25s ease;
+  margin: 6px;
 }
 
-#yes { background: #4CAF50; color: white; left: 20%; top: 45%; }
-#no  { background: #f44336; color: white; left: 60%; top: 45%; }
-
-.top-btn {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: rgba(255,255,255,0.25);
-  color: white;
-  padding: 8px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-}
+#yes { background: #4CAF50; color: white; position: absolute; }
+#no  { background: #f44336; color: white; position: absolute; }
 
 .hidden { display: none; }
 
-#result img {
-  width: 90%;
-  max-width: 320px;
-  border-radius: 16px;
-  margin-top: 20px;
+#cameraPreview video,
+#cameraPreview img {
+  width: 260px;
+  border-radius: 18px;
+  margin-top: 12px;
 }
 
-.emoji, .heart {
-  position: fixed;
-  font-size: 26px;
-  animation: fall 3s linear forwards;
-}
-
-@keyframes fall {
-  from { top: -10%; }
-  to { top: 110%; }
-}
-
-.confetti {
-  position: fixed;
-  width: 8px;
-  height: 14px;
-  animation: confetti 3s linear forwards;
-}
-
-@keyframes confetti {
-  from { transform: translateY(-10vh) rotate(0); }
-  to { transform: translateY(110vh) rotate(720deg); }
+.action-btn {
+  background: rgba(255,255,255,0.85);
 }
 </style>
 </head>
 
 <body>
 
-<button id="langBtn" class="top-btn">HI</button>
-
 <div class="container">
-  <h1 id="question"></h1>
+  <h1 id="question">Will you be my Valentine? 💖🥺</h1>
 
   <div class="play-area" id="playArea">
-    <button id="yes">Yes 💖</button>
-    <button id="no">No 💔</button>
+    <button id="yes" style="left:20%;top:45%;">Yes 💖</button>
+    <button id="no"  style="left:60%;top:45%;">No 💔</button>
   </div>
 
   <div id="yesResult" class="hidden">
-    <h1 id="yesText"></h1>
-    <img src="dog.gif">
-  </div>
+    <h1>YAYYY 😍 Selfie time!</h1>
 
-  <div id="noResult" class="hidden">
-    <h1 id="noText"></h1>
-    <img src="dog.gif">
+    <div id="cameraPreview">
+      <video id="video" autoplay playsinline></video>
+      <img id="photo" class="hidden" />
+    </div>
+
+    <div>
+      <button id="shareBtn" class="action-btn">Share 💌</button>
+      <button id="downloadBtn" class="action-btn">Download 📥</button>
+    </div>
   </div>
 </div>
 
 <audio id="yesSong" src="Dil Cheer Ke Dekh(KoshalWorld.Com).mp3"></audio>
-<audio id="noSong" src="Dil Tod Ke Hansti Ho Mera(KoshalWorld.Com).mp3"></audio>
 
 <script>
-/* =========================
-   💑 CUSTOM COUPLE NAMES
-========================= */
-const fromName = "Aakash";
-const toName   = "You";
-
-/* =========================
-   🌍 LANGUAGE DATA
-========================= */
-const text = {
-  en: {
-    question: `Will you be my Valentine, ${toName}? 💝🥺`,
-    yesWin: `YAY ${toName}! ❤️ ${fromName} is officially yours 😍`,
-    noLose: "😭 You broke my heart…"
-  },
-  hi: {
-    question: `${toName}, meri Valentine banogi? 💖🥺`,
-    yesWin: `YAY ${toName}! ❤️ ${fromName} tumhara ho gaya 😍`,
-    noLose: "😭 Dil tod diya yaar…"
-  }
-};
-
-let lang = "en";
-
-/* =========================
-   🎵 AUDIO SETTINGS
-========================= */
-const YES_START = 34;
-const NO_START  = 87;
-
-/* =========================
+/* =====================
    GAME LOGIC
-========================= */
+===================== */
 const yesBtn = document.getElementById("yes");
 const noBtn = document.getElementById("no");
-const question = document.getElementById("question");
-const yesText = document.getElementById("yesText");
-const noText = document.getElementById("noText");
 const playArea = document.getElementById("playArea");
+const question = document.getElementById("question");
 const yesResult = document.getElementById("yesResult");
-const noResult = document.getElementById("noResult");
-const langBtn = document.getElementById("langBtn");
+
+const video = document.getElementById("video");
+const photo = document.getElementById("photo");
+const shareBtn = document.getElementById("shareBtn");
+const downloadBtn = document.getElementById("downloadBtn");
 
 const yesSong = document.getElementById("yesSong");
-const noSong = document.getElementById("noSong");
 
-let dodgeCount = 0;
-let audioUnlocked = false;
+let dodges = 0;
+const REQUIRED = 10;
 
-/* =========================
-   FUNCTIONS
-========================= */
-function updateText() {
-  question.textContent = text[lang].question;
-  yesText.textContent = text[lang].yesWin;
-  noText.textContent = text[lang].noLose;
-}
-
-updateText();
-
-langBtn.onclick = () => {
-  lang = lang === "en" ? "hi" : "en";
-  langBtn.textContent = lang.toUpperCase();
-  updateText();
-};
-
-function playFrom(audio, time, loop=false) {
-  audio.pause();
-  audio.currentTime = time;
-  audio.loop = loop;
-  audio.volume = 0;
-  audio.play().then(() => {
-    let v = 0;
-    const fade = setInterval(() => {
-      v += 0.05;
-      audio.volume = Math.min(v,1);
-      if (v >= 1) clearInterval(fade);
-    }, 80);
-  }).catch(()=>{});
-}
+/* Funny taunts */
+const taunts = [
+  "Pakadne ka sapna mat dekho 😏",
+  "Aur zor lagao 😂",
+  "YES bhag raha hai 💨",
+  "Relationship test chal raha hai 😈",
+  "Bas thoda aur 😜",
+  "Mouse thak gaya kya 😎",
+  "Mobile pe ho? LOL 🤡",
+  "Almost… NOT 😆",
+  "Last try shayad 😏",
+  "Okay fine 😌"
+];
 
 function moveYes() {
   const w = playArea.clientWidth - yesBtn.offsetWidth;
   const h = playArea.clientHeight - yesBtn.offsetHeight;
   yesBtn.style.left = Math.random()*w + "px";
   yesBtn.style.top  = Math.random()*h + "px";
+  question.textContent = taunts[dodges % taunts.length];
 }
 
-/* =========================
-   YES BUTTON
-========================= */
-yesBtn.onclick = () => {
-  if (!audioUnlocked) {
-    playFrom(yesSong, YES_START);
-    audioUnlocked = true;
-  }
-
-  if (dodgeCount < 3) {
-    dodgeCount++;
+yesBtn.onclick = async () => {
+  if (dodges < REQUIRED) {
+    dodges++;
     moveYes();
+    yesSong.play().catch(()=>{});
     return;
   }
 
-  // SUCCESS 🎉
-  yesSong.pause();
-  playFrom(yesSong, YES_START, true);
-
+  /* SUCCESS */
   playArea.classList.add("hidden");
   question.classList.add("hidden");
   yesResult.classList.remove("hidden");
-
-  for (let i=0;i<40;i++){
-    const c=document.createElement("div");
-    c.className="confetti";
-    c.style.left=Math.random()*100+"vw";
-    c.style.background=["#ff4e8a","#fff","#ffc0cb","#ff1493"][i%4];
-    document.body.appendChild(c);
-    setTimeout(()=>c.remove(),3000);
-  }
-
-  for (let i=0;i<20;i++){
-    const h=document.createElement("div");
-    h.className="heart";
-    h.textContent="💖";
-    h.style.left=Math.random()*100+"vw";
-    document.body.appendChild(h);
-    setTimeout(()=>h.remove(),3000);
-  }
+  startCamera();
 };
 
-/* Desktop tease */
-yesBtn.onmouseenter = () => {
-  if (audioUnlocked && dodgeCount < 3) moveYes();
-};
-
-/* =========================
-   NO BUTTON
-========================= */
 noBtn.onclick = () => {
-  yesSong.pause();
-  playFrom(noSong, NO_START);
+  alert("NO not allowed 😤");
+};
 
-  playArea.classList.add("hidden");
-  question.classList.add("hidden");
-  noResult.classList.remove("hidden");
+/* =====================
+   📸 CAMERA LOGIC
+===================== */
+let stream;
 
-  if (navigator.vibrate) navigator.vibrate([200,100,200]);
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user" }
+    });
+    video.srcObject = stream;
 
-  for (let i=0;i<25;i++){
-    const e=document.createElement("div");
-    e.className="emoji";
-    e.textContent="😭";
-    e.style.left=Math.random()*100+"vw";
-    document.body.appendChild(e);
-    setTimeout(()=>e.remove(),3000);
+    // Auto capture after 2 sec
+    setTimeout(capturePhoto, 2000);
+
+  } catch (err) {
+    alert("Camera permission denied 😢");
   }
+}
+
+function capturePhoto() {
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext("2d").drawImage(video, 0, 0);
+
+  photo.src = canvas.toDataURL("image/png");
+  photo.classList.remove("hidden");
+  video.classList.add("hidden");
+
+  // stop camera
+  stream.getTracks().forEach(t => t.stop());
+}
+
+/* =====================
+   💌 SHARE
+===================== */
+shareBtn.onclick = async () => {
+  const blob = await (await fetch(photo.src)).blob();
+  const file = new File([blob], "valentine.png", { type: "image/png" });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({
+      files: [file],
+      title: "Valentine 💖",
+      text: "I said YES 😍"
+    });
+  } else {
+    alert("Sharing not supported on this device 😢");
+  }
+};
+
+/* =====================
+   📥 DOWNLOAD
+===================== */
+downloadBtn.onclick = () => {
+  const a = document.createElement("a");
+  a.href = photo.src;
+  a.download = "valentine-selfie.png";
+  a.click();
 };
 </script>
 
